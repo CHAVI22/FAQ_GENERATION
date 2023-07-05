@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Tester</title>
+    <style>
+        .center {
+            display: block;
+            margin: auto;
+        }
+        div {
+            text-align: center;
+            margin-top: 2%;
+        }
+        textarea {
+            resize: none;
+        }
+        button {
+            padding: 5px;
+        }
+        ol {
+            display: inline-block;
+        }
+        li {
+            padding: 10px;
+            text-align: left;
+        }
+    </style>
+    <script>
+        const url = 'http://127.0.0.1:8000/api'
+        function get_faq(_context, _limit)
+        {
+            const title = document.getElementById("title");
+            const faq_list = document.getElementById("faqs");
+
+            if(!_context)
+            {
+                title.innerHTML = "Passage cannot be empty";
+                return;
+            }
+
+            title.innerHTML = "Loading...";
+            faq_list.innerHTML = "";
+
+            console.log("Fetching API Data");
+            console.time("timer");
+
+            fetch(url, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    context: _context,
+                    limit: _limit
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.timeEnd("timer");
+                title.innerHTML = "Frequently Asked Questions"
+                data.forEach(record => {
+                    const list_item = document.createElement('li');
+                    const div = document.createElement('div')
+                    list_item.append(record.question);
+                    list_item.append(div);
+                    list_item.append(`Ans: ${record.answer}`);
+                    faq_list.append(list_item);
+                });
+				console.log(data);
+            })
+            .catch(error => console.error("Error: ", error));
+        }
+    </script>
+</head>
+<body>
+    <div>
+        <h1>FAQ Generator</h1>
+    </div>
+    <div>
+        <textarea class="center" id="context" rows="10" cols="60" placeholder="Enter the passage here"></textarea>
+    </div>
+    <div>
+        Number of Questions: <input type="number" id="limit" min="1" max="20" value="2">
+    </div>
+    <div>
+        <button onclick="get_faq(context.value, limit.value)">Generate FAQs</button>
+    </div>
+    <hr>
+    <div>
+        <b id="title"></b>
+        <br>
+        <ol id="faqs"></ol>
+    </div>
+</body>
+</html>
